@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /*Simple reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #333;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        h1,
+        h3 {
+            color: white;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        div {
+            width: 100%;
+            height: auto;
+            top: 10em;
+            text-align: center;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div>
+        <h1>You Know Nothing John Snow!</h1>
+        <h3>-Igrid</h3>
+    </div>
+    <script>
+        //i may add leaves and dynamic background 我可以加入葉子和動態背景
+
+        //教學 http://thecodeplayer.com/walkthrough/html5-canvas-snow-effect
+
+        window.onload = function () {
+            //canvas init 創建canvas
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+
+            //canvas dimensions 
+            var W = window.innerWidth;
+            var H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+
+            //snowflake particles 雪花顆粒
+            var mp = 50; //max particles 最大粒子數
+            var particles = [];
+            for (var i = 0; i < mp; i++) {
+                particles.push({
+                    x: Math.random() * W, //x-coordinate x 座標
+                    y: Math.random() * H, //y-coordinate y 座標
+                    r: Math.random() * 6 + 1, //radius 半徑
+                    d: Math.random() * mp //density 密度
+                })
+            }
+
+            //Lets draw the flakes 畫出薄片
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.beginPath();
+                for (var i = 0; i < mp; i++) {
+                    var p = particles[i];
+                    ctx.moveTo(p.x, p.y);
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                update();
+            }
+
+            //Function to move the snowflakes  移動雪花的函數
+            //angle will be an ongoing incremental flag. Sin and Cos functions will be applied to it to create vertical and horizontal movements of the flakes
+            // 角度將是一個持續增量標誌。 將應用正弦和餘弦函數來創建薄片的垂直和水平運動
+            var angle = 0;
+            function update() {
+                angle += 0.01;
+                for (var i = 0; i < mp; i++) {
+                    var p = particles[i];
+                    //Updating X and Y coordinates  更新X和Y座標
+                    //We will add 1 to the cos function to prevent negative values which will lead flakes to move upwards  我們將cos函數加1，防止負值導致薄片向上移動
+                    //Every particle has its own density which can be used to make the downward movement different for each flake  每個粒子都有自己的密度，可以用來讓每個薄片的向下運動不同
+                    //Lets make it more random by adding in the radius  新增半徑使其更加隨機
+                    p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
+                    p.x += Math.sin(angle) * 2;
+
+                    //Sending flakes back from the top when it exits  退出時將薄片從頂部送回 退到底部時退回？
+                    //Lets make it a bit more organic and let flakes enter from the left and right also. 讓我們讓它變得更生動一點，讓薄片也從左側和右側進入。
+                    if (p.x > W + 5 || p.x < -5 || p.y > H) {
+                        if (i % 3 > 0) //66.67% of the flakes
+                        {
+                            particles[i] = { x: Math.random() * W, y: -10, r: p.r, d: p.d };
+                        }
+                        else {
+                            //If the flake is exitting from the right  如果薄片從右側退出
+                            if (Math.sin(angle) > 0) {
+                                //Enter from the left  從左邊進入
+                                particles[i] = { x: -5, y: Math.random() * H, r: p.r, d: p.d };
+                            }
+                            else {
+                                //Enter from the right  從右邊進入
+                                particles[i] = { x: W + 5, y: Math.random() * H, r: p.r, d: p.d };
+                            }
+                        }
+                    }
+                }
+            }
+
+            //animation loop  動畫循環
+            setInterval(draw, 33);
+        }
+    </script>
+</body>
+
+</html>
